@@ -1,0 +1,13 @@
+const express = require("express");
+const authentication = require("../middleware/authentication");
+const errorHandler = require("../middleware/error-handler");
+const userController = require("../controllers/user.controller");
+const router = express.Router();
+
+router.post("/auth/signup", userController.signUp);
+router.post("/auth/login", userController.signIn);
+router.get("/auth/verify/:token", userController.accountVerificarion);
+router.use(authentication);
+router.use(errorHandler);
+
+module.exports = router;
