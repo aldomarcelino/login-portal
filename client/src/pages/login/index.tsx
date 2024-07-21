@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import { Button, TextField } from "components/elements";
@@ -7,6 +7,8 @@ import { Colors } from "styles/theme/color";
 import { setLocalStorage } from "utils/local-storage";
 import { useNavigate } from "react-router";
 import AskingVerifyLinkModal from "./verification-model";
+import { GoogleLogin } from "@react-oauth/google";
+// import FacebookLogin from "react-facebook-login";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -69,13 +71,56 @@ const LoginPage = () => {
     }
   };
 
+  // Handle Google Login
+  const onSuccess = async (tokenResponse: any) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_SERVER}/auth/google`,
+        {
+          idToken: tokenResponse.credential,
+        }
+      );
+
+      const { access_token, user } = response.data;
+
+      setLocalStorage("access_token", access_token);
+      setLocalStorage("full_name", user.full_name);
+      setLocalStorage("email", user.email);
+
+      navigate("/");
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  const onError = async () => {
+    setError("Google sign-in failed");
+  };
+
+  // Facebook login
+  const handleLogin = () => {
+    window.location.href = `${process.env.REACT_APP_API_SERVER}/auth/facebook`;
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token) {
+      localStorage.setItem("access_token", token);
+      navigate("/");
+    } else {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   return (
     <>
       <Box maxWidth="40%" margin="auto" padding="74px 0px">
         <Box textAlign="center" sx={{ cursor: "pointer" }}>
           <Box
             position="relative"
-            sx={{ height: "114px", width: "100%", marginBottom: "23px" }}
+            sx={{ height: "94px", width: "100%", marginBottom: "12px" }}
           >
             <img
               alt="logo-wellness"
@@ -162,6 +207,22 @@ const LoginPage = () => {
               />
             </Box>
           </form>
+
+          {/* SSO Login */}
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            marginTop="18px"
+          >
+            <button onClick={handleLogin}>
+              <img src="/path/to/facebook-icon.png" alt="Facebook Login" />
+              Login with Facebook
+            </button>
+
+            {/* Google login */}
+            <GoogleLogin onSuccess={onSuccess} onError={onError} />
+          </Box>
         </Box>
       </Box>
       {/* Asking to send Verification link modal */}

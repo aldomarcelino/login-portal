@@ -6,6 +6,46 @@ const { compareThePass } = require("../helpers/encryption");
 const { User } = require("../models");
 const { sendVerificationEmail } = require("../helpers/email-verification");
 const { OAuth2Client } = require("google-auth-library");
+const passport = require("passport");
+const { Strategy: FacebookStrategy } = require("passport-facebook");
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: `${process.env.SERVER_URL}/auth/facebook/callback`,
+      profileFields: ["id", "emails", "name"],
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      const { id, emails, name } = profile;
+      const email = emails?.[0]?.value;
+
+      let user = await User.findOne({ where: { facebook_sso_id: id } });
+
+      if (!user) {
+        user = await User.create({
+          full_name: `${name.givenName} ${name.familyName}`,
+          email,
+          facebook_sso_id: id,
+          password: "Bismillah",
+          sso_sign_option: "FACEBOOK",
+        });
+      }
+
+      const token = payloadToToken({ id: user.id });
+      done(null, { user, token });
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
 
 class UserController {
   // Register new user
@@ -112,12 +152,17 @@ class UserController {
 
   static async signInWithGoogle(req, res, next) {
     try {
+      // Verify Google Token
       const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
       const ticket = await client.verifyIdToken({
-        idToken: req.headers.google_token,
+        idToken: req.body.idToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
+
+      // Get Payload From Token
       const payload = ticket.getPayload();
+
+      // Find or Create User
       const [user, created] = await User.findOrCreate({
         where: {
           email: payload.email,
@@ -126,18 +171,28 @@ class UserController {
           full_name: `${payload.given_name} ${payload.family_name}`,
           email: payload.email,
           password: "Bismillah",
-          phone_number: "+62",
+          sso_sign_option: "GOOGLE",
+          google_sso_id: payload.sub,
         },
       });
 
+      // Update is_login to true and increment login_count
+      user.is_login = true;
+      user.login_count = (user.login_count || 0) + 1;
+      await user.save();
+
+      // Create new access_token
       let access_token = payloadToToken({
         id: user.id,
         email: user.email,
       });
 
-      delete user.password;
-
-      res.status(200).json({ access_token, user, img: payload.picture });
+      // Response
+      res.status(200).json({
+        access_token,
+        user: { full_name: user.full_name, email: user.email },
+        img: payload.picture,
+      });
     } catch (error) {
       next(error);
     }
@@ -145,6 +200,7 @@ class UserController {
 
   static async getAllUsers(_, res, next) {
     try {
+      // Find All User
       const users = await User.findAll({
         attributes: { exclude: ["password"] },
         order: [["updatedAt", "DESC"]],
@@ -200,6 +256,20 @@ class UserController {
     } catch (error) {
       next(error);
     }
+  }
+
+  static async signInWithFacebook(req, res, next) {
+    passport.authenticate("facebook", { scope: ["email"] })(req, res, next);
+  }
+
+  static async facebookCallback(req, res, next) {
+    passport.authenticate("facebook", { session: false }, (err, user, info) => {
+      if (err) return next(err);
+      if (!user) return res.redirect(`${process.env.CLIENT_URL}/login`);
+
+      const { token } = user;
+      res.redirect(`${process.env.CLIENT_URL}/auth?token=${token}`);
+    })(req, res, next);
   }
 }
 

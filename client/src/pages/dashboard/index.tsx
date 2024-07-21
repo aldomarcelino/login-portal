@@ -11,7 +11,6 @@ import {
 import { Menu, Pagination, SearchBar, Table } from "components/elements";
 import { Colors } from "styles/theme/color";
 import { EllipsisVertical, Plus } from "lucide-react";
-// import ProfileDetailModal from "components/layout/modal/detail-profile-modal";
 import { useAppDispatch } from "hooks";
 import { setUserDetail } from "store/reducer/user-profile";
 import useResponsive from "utils/use-media-query";
@@ -63,11 +62,6 @@ const Dashboard = () => {
     {
       id: 2,
       title: "Email",
-      align: "left",
-    },
-    {
-      id: 3,
-      title: "Phone Number",
       align: "left",
     },
     {
@@ -237,7 +231,6 @@ const Dashboard = () => {
                     </Box>
                   </TableCell>
                   <TableCell align="left">{item.email}</TableCell>
-                  <TableCell align="left">{item.phone_number}</TableCell>
                   <TableCell align="center">{item.login_count}</TableCell>
                   <TableCell align="left">
                     {handleShowStatus(item.is_login)}

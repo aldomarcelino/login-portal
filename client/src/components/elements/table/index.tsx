@@ -93,7 +93,7 @@ const Tabel: React.FC<TabelProps> = ({
                     },
                   }}
                 >
-                  {[...Array(8)].map((_, idx) => (
+                  {[...Array(7)].map((_, idx) => (
                     <TableCell key={`${idx}-TableCell`}>
                       <Skeleton
                         data-testid="skeleton"
