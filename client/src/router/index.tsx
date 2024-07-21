@@ -6,6 +6,7 @@ import RegisterPage from "pages/register";
 import { getLocalStorage } from "utils/local-storage";
 import Dashboard from "pages/dashboard";
 import VerficationPage from "pages/verification";
+import AuthRedirect from "pages/fb-verification";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
       if (getLocalStorage("access_token")) throw redirect("/");
       return null;
     },
+  },
+  {
+    path: "/auth",
+    element: <AuthRedirect />,
   },
 ]);
 

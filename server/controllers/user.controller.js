@@ -33,6 +33,13 @@ passport.use(
         });
       }
 
+      // Update is_verified to true
+      user.is_verified = true;
+      // Update is_login to true and increment login_count
+      user.is_login = true;
+      user.login_count = user.login_count + 1;
+      await user.save();
+
       const token = payloadToToken({ id: user.id });
       done(null, { user, token });
     }
@@ -263,12 +270,14 @@ class UserController {
   }
 
   static async facebookCallback(req, res, next) {
-    passport.authenticate("facebook", { session: false }, (err, user, info) => {
+    passport.authenticate("facebook", { session: false }, (err, data, info) => {
       if (err) return next(err);
-      if (!user) return res.redirect(`${process.env.CLIENT_URL}/login`);
+      if (!data) return res.redirect(`${process.env.CLIENT_URL}/login`);
 
-      const { token } = user;
-      res.redirect(`${process.env.CLIENT_URL}/auth?token=${token}`);
+      const { token, user } = data;
+      res.redirect(
+        `${process.env.CLIENT_URL}/auth?token=${token}&full_name=${user.full_name}&email=${user.email}`
+      );
     })(req, res, next);
   }
 }

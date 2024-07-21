@@ -8,7 +8,6 @@ import { setLocalStorage } from "utils/local-storage";
 import { useNavigate } from "react-router";
 import AskingVerifyLinkModal from "./verification-model";
 import { GoogleLogin } from "@react-oauth/google";
-// import FacebookLogin from "react-facebook-login";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -107,7 +106,7 @@ const LoginPage = () => {
     const token = urlParams.get("token");
 
     if (token) {
-      localStorage.setItem("access_token", token);
+      setLocalStorage("access_token", token);
       navigate("/");
     } else {
       navigate("/login");
@@ -116,7 +115,7 @@ const LoginPage = () => {
 
   return (
     <>
-      <Box maxWidth="40%" margin="auto" padding="74px 0px">
+      <Box maxWidth="41%" margin="auto" padding="74px 0px">
         <Box textAlign="center" sx={{ cursor: "pointer" }}>
           <Box
             position="relative"
@@ -214,10 +213,25 @@ const LoginPage = () => {
             alignItems="center"
             justifyContent="center"
             marginTop="18px"
+            gap="9px"
           >
-            <button onClick={handleLogin}>
-              <img src="/path/to/facebook-icon.png" alt="Facebook Login" />
-              Login with Facebook
+            <button
+              onClick={handleLogin}
+              style={{
+                borderRadius: "5px",
+                border: `1px solid ${Colors.gery80}`,
+                backgroundColor: Colors.white,
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "4px 9px",
+                cursor: "pointer",
+              }}
+            >
+              <img src="/facebook.png" alt="Facebook Login" height="29px" />
+              <Typography fontSize={13} fontWeight={300}>
+                Login with Facebook
+              </Typography>
             </button>
 
             {/* Google login */}
