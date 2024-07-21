@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Typography } from "@mui/material";
 import axios from "axios";
 import { Button, TextField } from "components/elements";
@@ -101,18 +101,6 @@ const LoginPage = () => {
     window.location.href = `${process.env.REACT_APP_API_SERVER}/auth/facebook`;
   };
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-
-    if (token) {
-      setLocalStorage("access_token", token);
-      navigate("/");
-    } else {
-      navigate("/login");
-    }
-  }, [navigate]);
-
   return (
     <>
       <Box maxWidth="41%" margin="auto" padding="74px 0px">
@@ -185,6 +173,8 @@ const LoginPage = () => {
               textAlign="center"
               marginTop="24px"
               marginBottom="32px"
+              sx={{ cursor: "pointer" }}
+              onClick={() => navigate("/forgot-password")}
             >
               Forgot Password
             </Typography>

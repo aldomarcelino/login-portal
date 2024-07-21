@@ -19,11 +19,17 @@ const errorHandler = async (err, req, res, next) => {
     case "empty":
       res.status(400).json({ message: "Required Email or Password" });
       break;
+    case "pass-used":
+      res.status(400).json({ message: "The password has been used before" });
+      break;
     case "Forbidden":
       res.status(403).json({ message: "Not Authorize" });
       break;
     case "not_verified":
       res.status(403).json({ message: "Please verify your account first" });
+      break;
+    case "Not_Found":
+      res.status(404).json({ message: "User Not Found" });
       break;
     case "Not Found":
       res.status(404).json({ message: "Data Not Found" });

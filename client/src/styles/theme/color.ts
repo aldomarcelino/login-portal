@@ -23,6 +23,7 @@ export const Colors = {
   darkBlue40: "#5369c4",
   darkBlue20: "#5369c4",
   lightBlue: "#D8E2F6",
+  lightBlue100: "#D8EAF5",
   gradientBlue: "linear-gradient(270deg, #3A9DD1, #408EC7, #3C70B7 100%)",
 
   //shadow

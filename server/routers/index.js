@@ -9,6 +9,8 @@ router.post("/auth/login", userController.signIn);
 router.post("/auth/google", userController.signInWithGoogle);
 router.get("/email/verification", userController.sendVerification);
 router.get("/auth/facebook", userController.signInWithFacebook);
+router.post("/auth/forgot-password", userController.forgotPassword);
+router.post("/auth/change-password", userController.changePassword);
 router.get("/auth/facebook/callback", userController.facebookCallback);
 router.get("/auth/verify/:token", userController.accountVerificarion);
 router.use(authentication);

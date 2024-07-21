@@ -2,7 +2,7 @@ const {
   payloadToToken,
   tokenToPayload,
 } = require("../helpers/token-generator");
-const { compareThePass } = require("../helpers/encryption");
+const { compareThePass, hashThePassword } = require("../helpers/encryption");
 const { User } = require("../models");
 const { sendVerificationEmail } = require("../helpers/email-verification");
 const { OAuth2Client } = require("google-auth-library");
@@ -279,6 +279,61 @@ class UserController {
         `${process.env.CLIENT_URL}/auth?token=${token}&full_name=${user.full_name}&email=${user.email}`
       );
     })(req, res, next);
+  }
+
+  static async forgotPassword(req, res, next) {
+    try {
+      // Destructuring payload
+      const { email } = req.body;
+
+      // Validate body
+      if (!email) throw { name: "empty" };
+
+      const user = await User.findOne({ where: { email } });
+
+      // Check if the user exists
+      if (!user) throw { name: "Not_Found" };
+
+      // Generate access token
+      const token = payloadToToken({ id: user.id });
+
+      // Send verification email
+      const verificationLink = `${process.env.CLIENT_URL}/change-password?token=${token}`;
+      await sendVerificationEmail(
+        email,
+        verificationLink,
+        "Please Click this link to change your password"
+      );
+
+      // Send response
+      res.status(201).json({ message: "email send successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async changePassword(req, res, next) {
+    try {
+      // Destructuring payload
+      const { password, token } = req.body;
+      let payload = tokenToPayload(token);
+
+      let user = await User.findByPk(payload.id);
+      if (!user) throw { name: "JsonWebTokenError" };
+
+      // Compare the password
+      const isValid = compareThePass(password, user.password);
+      if (isValid) throw { name: "pass-used" };
+
+      // Update password
+      user.password = hashThePassword(password);
+      await user.save();
+
+      // Send response
+      res.status(200).json({ message: "Password Changed Successfully" });
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

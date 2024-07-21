@@ -1,6 +1,9 @@
 const nodemailer = require("nodemailer");
 
-const sendVerificationEmail = async (email, verificationLink) => {
+const sendVerificationEmail = async (email, verificationLink, isResetPass) => {
+  const msg = isResetPass
+    ? "Please Click this link to change your password"
+    : "Please verify your account by clicking the link";
   let transporter = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -13,8 +16,8 @@ const sendVerificationEmail = async (email, verificationLink) => {
     from: "user_portal@mailinator.com",
     to: email,
     subject: "Account Verification",
-    text: `Please verify your account by clicking the link: ${verificationLink}`,
-    html: `<p>Please verify your account by clicking the link: <a href="${verificationLink}">${verificationLink}</a></p>`,
+    text: `${msg}: ${verificationLink}`,
+    html: `<p>${msg}: <a href="${verificationLink}">${verificationLink}</a></p>`,
   };
 
   await transporter.sendMail(mailOptions);

@@ -7,6 +7,8 @@ import { getLocalStorage } from "utils/local-storage";
 import Dashboard from "pages/dashboard";
 import VerficationPage from "pages/verification";
 import AuthRedirect from "pages/fb-verification";
+import ForgotPasswordPage from "pages/forgot-password";
+import ChangePasswordPage from "pages/change-password";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +52,14 @@ const router = createBrowserRouter([
   {
     path: "/auth",
     element: <AuthRedirect />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/change-password",
+    element: <ChangePasswordPage />,
   },
 ]);
 
