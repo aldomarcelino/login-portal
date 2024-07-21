@@ -3,7 +3,7 @@ export const password = (value: string) =>
   !/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*,.?]).{8,34}$/.test(
     value
   )
-    ? "Password must contain 8-34 characters, lowercase and uppercase letters, numbers and symbols"
+    ? "Password must contain min 8 characters, lowercase and uppercase letters, numbers and symbols"
     : "";
 
 export const phoneNumber = (value: string) =>

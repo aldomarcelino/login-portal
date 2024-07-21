@@ -11,22 +11,32 @@ import {
 import { Menu, Pagination, SearchBar, Table } from "components/elements";
 import { Colors } from "styles/theme/color";
 import { EllipsisVertical, Plus } from "lucide-react";
-import ProfileDetailModal from "components/layout/modal/detail-profile-modal";
-import VerificationModal from "components/layout/modal/verify-action-modal";
-import UserCreationModal from "components/layout/modal/user-creation-modal";
-import { useAppDispatch, useAppSelector } from "hooks";
-import {
-  selectUserList,
-  setUserDetail,
-  setUserList,
-} from "store/reducer/user-profile";
+// import ProfileDetailModal from "components/layout/modal/detail-profile-modal";
+import { useAppDispatch } from "hooks";
+import { setUserDetail } from "store/reducer/user-profile";
 import useResponsive from "utils/use-media-query";
 import UserCard from "components/elements/card";
+import axios from "axios";
+import { getLocalStorage } from "utils/local-storage";
+import moment from "moment";
 
 interface ListHead {
   id: number;
   title: string;
   align: "left" | "right" | "center" | "inherit" | "justify";
+}
+
+export interface User {
+  id: string;
+  full_name: string;
+  image_url: string;
+  phone_number?: string;
+  email: string;
+  login_count?: string;
+  is_login: boolean;
+  is_verified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const Dashboard = () => {
@@ -36,15 +46,13 @@ const Dashboard = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
+  const [data, setData] = useState<User[] | null>(null);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentIdx, setCurrentIdx] = useState(1);
+  const [currentIdx, setCurrentIdx] = useState("");
   const [dataLimit] = useState(5);
   const [_, setError] = useState("");
-
-  // Data from global state
-  const data = useAppSelector(selectUserList);
 
   const listHead: ListHead[] = [
     {
@@ -64,12 +72,22 @@ const Dashboard = () => {
     },
     {
       id: 4,
-      title: "Website",
+      title: "Login Count",
+      align: "center",
+    },
+    {
+      id: 5,
+      title: "Status",
       align: "left",
     },
     {
       id: 5,
-      title: "Company",
+      title: "Logout Time",
+      align: "left",
+    },
+    {
+      id: 3,
+      title: "SignUp on",
       align: "left",
     },
   ];
@@ -86,40 +104,54 @@ const Dashboard = () => {
     { id: 2, label: "Delete", handleClick: () => setShowDeleteModal(true) },
   ];
 
+  // Handle filter
+  const handleFilter = (arr: User[] | null | undefined = []) =>
+    arr?.filter((user: { full_name: string }) =>
+      user.full_name.toLowerCase().includes(search.toLowerCase())
+    );
+
   // Paginated the lsit
   const getPaginatedData = () => {
     const startIndex = currentPage * dataLimit - dataLimit;
     const endIndex = startIndex + dataLimit;
-    const final = data?.slice(startIndex, endIndex);
-    return final;
+    const final: User[] | null | undefined = data?.slice(startIndex, endIndex);
+    return final ? handleFilter(final) : null;
+  };
+
+  // Handle status
+
+  const handleShowStatus = (status: boolean) => {
+    let color = Colors.green100;
+    if (!status) color = Colors.red100;
+    return (
+      <Typography variant="body2" color={color} textAlign="center">
+        {status ? "Log In" : "Log Out"}
+      </Typography>
+    );
   };
 
   // Get Users
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const response = await fetch(
+        const response = await axios.get(
           `${process.env.REACT_APP_API_SERVER}/users`,
           {
-            method: "GET",
             headers: {
+              access_token: getLocalStorage("access_token"),
               "Content-Type": "application/json",
             },
           }
         );
-        if (!response.ok) {
-          throw new Error(`Something's wrong!`);
-        }
-        const data = await response.json();
 
-        const temp = data.map((v: any, idx: number) => ({
+        const temp = response?.data.map((v: any, idx: number) => ({
           ...v,
-          imageUrl: `https://picsum.photos/id/${
+          image_url: `https://picsum.photos/id/${
             idx + Math.floor(Math.random() * 100)
           }/200`,
         }));
 
-        dispatch(setUserList(temp));
+        setData(temp);
       } catch (error: any) {
         setError(error);
       }
@@ -151,102 +183,95 @@ const Dashboard = () => {
             <Table
               listHead={listHead}
               isLoading={!data}
-              isEmpty={data && data?.length === 0}
+              isEmpty={data && getPaginatedData()?.length === 0}
               onCLickAdd={() => {
                 setShowCreationModal(true);
                 setStatus("Create");
               }}
             >
-              {getPaginatedData()
-                ?.filter((user) =>
-                  user.name.toLowerCase().includes(search.toLowerCase())
-                )
-                ?.map((item) => (
-                  <TableRow
-                    key={item.name}
+              {getPaginatedData()?.map((item: User) => (
+                <TableRow
+                  key={item.full_name}
+                  sx={{
+                    cursor: "pointer",
+                    backgroundColor: "white",
+                    transition: "0.5s all ease",
+                    "&:hover": {
+                      boxShadow: Colors.shadowLightBlue,
+                    },
+                    "& td, & th": {
+                      border: 0,
+                      overflow: "hidden",
+                      color: Colors.darkGrey,
+                    },
+                  }}
+                  onClick={() => {
+                    dispatch(setUserDetail(item));
+                    setShowProfileModal(true);
+                  }}
+                >
+                  <TableCell
+                    align="left"
                     sx={{
-                      cursor: "pointer",
-                      backgroundColor: "white",
-                      transition: "0.5s all ease",
-                      "&:hover": {
-                        boxShadow: Colors.shadowLightBlue,
-                      },
-                      "& td, & th": {
-                        border: 0,
-                        overflow: "hidden",
-                        color: Colors.darkGrey,
-                      },
-                    }}
-                    onClick={() => {
-                      dispatch(setUserDetail(item));
-                      setShowProfileModal(true);
+                      borderTopLeftRadius: "9px",
+                      borderBottomLeftRadius: "9px",
                     }}
                   >
-                    <TableCell
-                      align="left"
-                      sx={{
-                        borderTopLeftRadius: "9px",
-                        borderBottomLeftRadius: "9px",
-                      }}
+                    <Box
+                      display="flex"
+                      gap={2}
+                      alignItems="center"
+                      sx={{ color: Colors.black, fontWeight: 500 }}
                     >
-                      <Box
-                        display="flex"
-                        gap={2}
-                        alignItems="center"
-                        sx={{ color: Colors.black, fontWeight: 500 }}
-                      >
-                        <img
-                          alt={item.name}
-                          src={item.imageUrl}
-                          style={{
-                            height: 44,
-                            width: 44,
-                            borderRadius: 44,
-                            objectFit: "cover",
-                          }}
-                        />
-                        {item.name}
-                      </Box>
-                    </TableCell>
-                    <TableCell align="left">{item.email}</TableCell>
-                    <TableCell align="left">{item.phone}</TableCell>
-                    <TableCell
-                      align="left"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <a
-                        href={"https://" + item.website}
-                        target="_blank"
-                        style={{ color: Colors.blue100 }}
-                      >
-                        {item.website}
-                      </a>
-                    </TableCell>
-                    <TableCell align="left">{item.company.name}</TableCell>
-                    <TableCell
-                      align="left"
-                      sx={{
-                        borderTopRightRadius: "9px",
-                        borderBottomRightRadius: "9px",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentIdx(item.id);
-                      }}
-                    >
-                      <Menu
-                        menuItems={itemList}
-                        width="180px"
-                        buttonBase={
-                          <EllipsisVertical
-                            style={{ cursor: "pointer" }}
-                            color={Colors.black}
-                          />
-                        }
+                      <img
+                        alt={item.full_name}
+                        src={item.image_url}
+                        style={{
+                          height: 44,
+                          width: 44,
+                          borderRadius: 44,
+                          objectFit: "cover",
+                        }}
                       />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      {item.full_name}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="left">{item.email}</TableCell>
+                  <TableCell align="left">{item.phone_number}</TableCell>
+                  <TableCell align="center">{item.login_count}</TableCell>
+                  <TableCell align="left">
+                    {handleShowStatus(item.is_login)}
+                  </TableCell>
+                  <TableCell align="left">
+                    {moment(item.updatedAt).format("DD MMM YYYY, HH:mm")}
+                  </TableCell>
+                  <TableCell align="left">
+                    {moment(item.createdAt).format("DD MMM YYYY, HH:mm")}
+                  </TableCell>
+                  <TableCell
+                    align="left"
+                    sx={{
+                      borderTopRightRadius: "9px",
+                      borderBottomRightRadius: "9px",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentIdx(item.id);
+                    }}
+                  >
+                    <Menu
+                      menuItems={itemList}
+                      width="180px"
+                      buttonBase={
+                        <EllipsisVertical
+                          style={{ cursor: "pointer" }}
+                          color={Colors.black}
+                        />
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
             </Table>
           ) : (
             <>
@@ -296,41 +321,37 @@ const Dashboard = () => {
                   <Typography>No Data</Typography>
                 ) : (
                   <>
-                    {getPaginatedData()
-                      ?.filter((user) =>
-                        user.name.toLowerCase().includes(search.toLowerCase())
-                      )
-                      ?.map((item, idx) => (
-                        <Grid
-                          key={`${idx}-card`}
-                          item
-                          md={6}
-                          marginTop="15px"
-                          paddingRight={
-                            (idx + 1) % 2 !== 0 && tablet ? "9px" : "0px"
-                          }
-                          paddingLeft={
-                            (idx + 1) % 2 === 0 && tablet ? "9px" : "0px"
-                          }
-                        >
-                          <UserCard
-                            data={item}
-                            handleClick={() => {
-                              dispatch(setUserDetail(item));
-                              setShowProfileModal(true);
-                            }}
-                            handleDelete={() => {
-                              setShowDeleteModal(true);
-                              setCurrentIdx(item.id);
-                            }}
-                            handleEdit={() => {
-                              setCurrentIdx(item.id);
-                              setShowCreationModal(true);
-                              setStatus("Edit");
-                            }}
-                          />
-                        </Grid>
-                      ))}
+                    {getPaginatedData()?.map((item, idx) => (
+                      <Grid
+                        key={`${idx}-card`}
+                        item
+                        md={6}
+                        marginTop="15px"
+                        paddingRight={
+                          (idx + 1) % 2 !== 0 && tablet ? "9px" : "0px"
+                        }
+                        paddingLeft={
+                          (idx + 1) % 2 === 0 && tablet ? "9px" : "0px"
+                        }
+                      >
+                        <UserCard
+                          data={item}
+                          handleClick={() => {
+                            dispatch(setUserDetail(item));
+                            setShowProfileModal(true);
+                          }}
+                          handleDelete={() => {
+                            setShowDeleteModal(true);
+                            // setCurrentIdx(item.id);
+                          }}
+                          handleEdit={() => {
+                            // setCurrentIdx(item.id);
+                            setShowCreationModal(true);
+                            setStatus("Edit");
+                          }}
+                        />
+                      </Grid>
+                    ))}
                   </>
                 )}
               </Grid>
@@ -342,46 +363,36 @@ const Dashboard = () => {
         {/* START - Pagination */}
         {data?.length && (
           <Box display="flex" justifyContent="end" margin="32px 0px">
-            <Pagination
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              pageLimit={Math.ceil(
-                (search
-                  ? data?.filter((user) =>
-                      user.name.toLowerCase().includes(search.toLowerCase())
-                    ).length
-                  : data?.length) / dataLimit
-              )}
-            />
+            {data.filter((user: User) =>
+              user.full_name.toLowerCase().includes(search.toLowerCase())
+            ).length ? (
+              <Pagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageLimit={Math.ceil(
+                  (search
+                    ? data.filter((user: User) =>
+                        user.full_name
+                          .toLowerCase()
+                          .includes(search.toLowerCase())
+                      ).length
+                    : data.length) / dataLimit
+                )}
+              />
+            ) : (
+              ""
+            )}
           </Box>
         )}
         {/* END - Pagination */}
       </Container>
 
       {/* START - Profile Modal */}
-      <ProfileDetailModal
+      {/* <ProfileDetailModal
         open={showProfileModal}
         onClose={() => setShowProfileModal(false)}
-      />
+      /> */}
       {/* END - Profile Modal */}
-
-      {/* START - Delete User Modal */}
-      <VerificationModal
-        open={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        id={currentIdx}
-      />
-      {/* END - Delete User Modal */}
-
-      {/* START - Creation User Modal */}
-      <UserCreationModal
-        open={showCreationModal}
-        onClose={() => setShowCreationModal(false)}
-        status={status}
-        setStatus={setStatus}
-        id={currentIdx}
-      />
-      {/* END - Creation User Modal */}
     </>
   );
 };

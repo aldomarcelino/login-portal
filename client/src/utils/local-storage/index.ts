@@ -1,4 +1,4 @@
-type ValueType = any; // Replace 'any' with specific types if known
+type ValueType = number | string;
 
 export const setLocalStorage = (key: string, value: ValueType): void => {
   if (typeof window !== "undefined") {
@@ -9,7 +9,7 @@ export const setLocalStorage = (key: string, value: ValueType): void => {
 export const getLocalStorage = (key: string): string | null => {
   if (typeof window !== "undefined") {
     const storedItem = localStorage.getItem(key);
-    return JSON.parse(storedItem || "");
+    return storedItem ? JSON.parse(storedItem) : null;
   }
   return null;
 };

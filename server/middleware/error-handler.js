@@ -22,6 +22,9 @@ const errorHandler = async (err, req, res, next) => {
     case "Forbidden":
       res.status(403).json({ message: "Not Authorize" });
       break;
+    case "not_verified":
+      res.status(403).json({ message: "Please verify your account first" });
+      break;
     case "Not Found":
       res.status(404).json({ message: "Data Not Found" });
       break;

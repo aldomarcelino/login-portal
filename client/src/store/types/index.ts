@@ -1,30 +1,12 @@
-interface GeoTypes {
-  lat: string;
-  lng: string;
-}
-
-interface AddressTypes {
-  street: string;
-  suite: string;
-  city: string;
-  zipcode: string;
-  geo: GeoTypes;
-}
-
-interface CompanyType {
-  name: string;
-  catchPhrase: string;
-  bs: string;
-}
-
 export interface UserTypes {
-  id: number;
-  name: string;
-  imageUrl: string;
-  username: string;
+  id: string;
+  full_name: string;
+  image_url: string;
+  phone_number?: string;
   email: string;
-  address: AddressTypes;
-  phone: string;
-  website: string;
-  company: CompanyType;
+  login_count?: string;
+  is_login: boolean;
+  is_verified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

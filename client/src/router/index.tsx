@@ -3,20 +3,22 @@ import { createBrowserRouter, redirect } from "react-router-dom";
 import Layout from "components/template";
 import LoginPage from "pages/login";
 import RegisterPage from "pages/register";
-// import SignIn from "components/SignIn";
+import { getLocalStorage } from "utils/local-storage";
+import Dashboard from "pages/dashboard";
+import VerficationPage from "pages/verification";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     loader: () => {
-      if (!localStorage.getItem("access_token")) throw redirect("/login");
+      if (!getLocalStorage("access_token")) throw redirect("/login");
       return null;
     },
     children: [
       {
         path: "/",
-        element: <div>Home Page</div>,
+        element: <Dashboard />,
       },
     ],
   },
@@ -24,7 +26,15 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
     loader: () => {
-      if (localStorage.getItem("access_token")) throw redirect("/");
+      if (getLocalStorage("access_token")) throw redirect("/");
+      return null;
+    },
+  },
+  {
+    path: "/verify/:token",
+    element: <VerficationPage />,
+    loader: () => {
+      if (getLocalStorage("access_token")) throw redirect("/");
       return null;
     },
   },
@@ -32,7 +42,7 @@ const router = createBrowserRouter([
     path: "/register",
     element: <RegisterPage />,
     loader: () => {
-      if (localStorage.getItem("access_token")) throw redirect("/");
+      if (getLocalStorage("access_token")) throw redirect("/");
       return null;
     },
   },

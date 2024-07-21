@@ -59,7 +59,7 @@ const Tabel: React.FC<TabelProps> = ({
                 alignItems="center"
                 position="absolute"
                 top="16px"
-                right="24px"
+                right="20px"
                 borderRadius="7px"
                 padding="3px"
                 sx={{
@@ -93,7 +93,7 @@ const Tabel: React.FC<TabelProps> = ({
                     },
                   }}
                 >
-                  {[...Array(6)].map((_, idx) => (
+                  {[...Array(8)].map((_, idx) => (
                     <TableCell key={`${idx}-TableCell`}>
                       <Skeleton
                         data-testid="skeleton"

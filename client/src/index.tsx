@@ -7,12 +7,12 @@ import reportWebVitals from "./reportWebVitals";
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
-document.title = "User Portal";
+document.title = "Profile Portal";
 root.render(
   <html lang="en">
     <head>
       <meta name="viewport" content="initial-scale=1, width=device-width" />
-      <title>User Portal</title>
+      <title>Profile Portal</title>
     </head>
     <body>
       <App />

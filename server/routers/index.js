@@ -6,8 +6,11 @@ const router = express.Router();
 
 router.post("/auth/signup", userController.signUp);
 router.post("/auth/login", userController.signIn);
+router.get("/email/verification", userController.sendVerification);
 router.get("/auth/verify/:token", userController.accountVerificarion);
 router.use(authentication);
+router.get("/auth/logout", userController.logOut);
+router.get("/users", userController.getAllUsers);
 router.use(errorHandler);
 
 module.exports = router;

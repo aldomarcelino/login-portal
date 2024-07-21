@@ -101,6 +101,9 @@ module.exports = (sequelize, DataTypes) => {
 
   User.beforeCreate((user) => {
     user.password = hashThePassword(user.password);
+    user.is_login = false;
+    user.is_verified = false;
+    user.login_count = 0;
   });
   return User;
 };

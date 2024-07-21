@@ -1,4 +1,10 @@
-import React, { useState, MouseEvent, useEffect, useRef } from "react";
+import React, {
+  useState,
+  MouseEvent,
+  useEffect,
+  useRef,
+  ReactNode,
+} from "react";
 import { Box, Menu, MenuItem } from "@mui/material";
 import styled from "@emotion/styled";
 import { Colors } from "styles/theme/color";
@@ -51,14 +57,16 @@ export interface MenuItem {
 
 interface CustomMenuProps {
   buttonBase: React.ReactNode;
-  menuItems: MenuItem[];
+  menuItems?: MenuItem[];
   width?: string;
+  children?: ReactNode;
 }
 
 const CustomMenu: React.FC<CustomMenuProps> = ({
   buttonBase,
   menuItems,
   width = "160px",
+  children,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -103,26 +111,32 @@ const CustomMenu: React.FC<CustomMenuProps> = ({
         }}
         MenuListProps={{ disablePadding: true, autoFocusItem: false }} // Disable auto focus
       >
-        {menuItems.map((item, index) => (
-          <MenuItem
-            key={`${index}-item`}
-            ref={index === 0 ? menuItemRef : null}
-            onClick={() => {
-              setAnchorEl(null);
-              item.handleClick();
-            }}
-            sx={{
-              color: Colors.darkGrey,
-              "&:hover": {
-                color:
-                  item.label === "Delete" ? Colors.red100 : Colors.darkBlue,
-              },
-            }}
-          >
-            {handleShowIcon(item.label)}
-            {item.label}
-          </MenuItem>
-        ))}
+        {children ? (
+          children
+        ) : (
+          <>
+            {menuItems?.map((item, index) => (
+              <MenuItem
+                key={`${index}-item`}
+                ref={index === 0 ? menuItemRef : null}
+                onClick={() => {
+                  setAnchorEl(null);
+                  item.handleClick();
+                }}
+                sx={{
+                  color: Colors.darkGrey,
+                  "&:hover": {
+                    color:
+                      item.label === "Delete" ? Colors.red100 : Colors.darkBlue,
+                  },
+                }}
+              >
+                {handleShowIcon(item.label)}
+                {item.label}
+              </MenuItem>
+            ))}
+          </>
+        )}
       </StyledMenu>
     </>
   );

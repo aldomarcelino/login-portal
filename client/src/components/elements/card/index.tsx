@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { Colors } from "styles/theme/color";
 import { UserTypes } from "store/types";
-import { Pen, Trash2 } from "lucide-react";
+import moment from "moment";
 
 interface CardProps {
   data: UserTypes;
@@ -17,6 +17,23 @@ const UserCard: React.FC<CardProps> = ({
   handleEdit,
   handleDelete,
 }) => {
+  const handleShowStatus = (status: boolean) => {
+    let color = Colors.green100;
+    if (!status) color = Colors.red100;
+    return (
+      <Box
+        border={`1px solid ${color}`}
+        padding="4px 9px"
+        marginTop="14px"
+        borderRadius="9px"
+      >
+        <Typography variant="body2" color={color} textAlign="center">
+          {status ? "User is logging in" : "The user has logged out"}
+        </Typography>
+      </Box>
+    );
+  };
+
   return (
     <Box
       bgcolor={Colors.white}
@@ -27,7 +44,7 @@ const UserCard: React.FC<CardProps> = ({
       <Box width="100%" borderRadius="20px" maxWidth="262px" minWidth="255px">
         <img
           alt="user-image"
-          src={data.imageUrl}
+          src={data.image_url}
           style={{
             width: "100%",
             height: "180px",
@@ -39,26 +56,6 @@ const UserCard: React.FC<CardProps> = ({
       </Box>
 
       <Box padding="16px">
-        <Box display="flex" gap="7px" justifyContent="end" alignItems="center">
-          <Pen
-            size={17}
-            color={Colors.darkBlue}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit();
-            }}
-            data-testid="edit-icon"
-          />
-          <Trash2
-            size={17}
-            color={Colors.red100}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            data-testid="delete-icon"
-          />
-        </Box>
         <Box width="220px">
           <Typography
             fontSize="21px"
@@ -67,28 +64,24 @@ const UserCard: React.FC<CardProps> = ({
             whiteSpace="nowrap"
             overflow="hidden"
           >
-            {data.name}
+            {data.full_name}
           </Typography>
         </Box>
         <Typography
           marginTop="4px"
           fontSize="12px"
         >{`Email: ${data.email}`}</Typography>
-        <Typography fontSize="12px">{`Phone: ${data.phone}`}</Typography>
-        <Typography fontSize="12px">{`Company: ${data.company.name}`}</Typography>
-        <Box
-          bgcolor={Colors.darkBlue}
-          padding="4px 9px"
-          marginTop="14px"
-          borderRadius="9px"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <a href={"https://" + data.website} target="_blank">
-            <Typography color={Colors.blue} textAlign="center">
-              About User ➟
-            </Typography>
-          </a>
-        </Box>
+        <Typography fontSize="12px">{`Phone: ${data.phone_number}`}</Typography>
+        <Typography fontSize="12px">{`Login Count: ${data.login_count}`}</Typography>
+        <Typography fontSize="12px">{`Sign Up On: ${moment(
+          data.createdAt
+        ).format("DD MMM YYYY, HH:mm")}`}</Typography>
+        <Typography fontSize="12px">{`Log Out On: ${
+          !data.is_login
+            ? moment(data.updatedAt).format("DD MMM YYYY, HH:mm")
+            : "-"
+        }`}</Typography>
+        {handleShowStatus(data.is_login)}
       </Box>
     </Box>
   );
