@@ -84,8 +84,8 @@ const LoginPage = () => {
       setLocalStorage("email", user.email);
 
       navigate("/");
-    } catch (error: any) {
-      setError(error.message);
+    } catch (e: any) {
+      setError(e.response && e.response.data && e.response.data.message);
     }
   };
 

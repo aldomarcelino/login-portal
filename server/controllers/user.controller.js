@@ -3,7 +3,7 @@ const {
   tokenToPayload,
 } = require("../helpers/token-generator");
 const { compareThePass, hashThePassword } = require("../helpers/encryption");
-const { User, Session } = require("../models");
+const { User, Session, HistoyLog } = require("../models");
 const { sendVerificationEmail } = require("../helpers/email-verification");
 const { OAuth2Client } = require("google-auth-library");
 const passport = require("passport");
@@ -90,6 +90,14 @@ class UserController {
   // Function ton generate tokens
   static generateTokens = async (user) => {
     try {
+      // Get today's date without the time
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Get tomorrow's date without the time
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
       const access_token = jwt.sign(
         {
           id: user.id,
@@ -110,7 +118,27 @@ class UserController {
         }
       );
 
+      // Sore session to db
       await Session.create({ userId: user.id, token: refresh_token });
+
+      const log = await HistoyLog.findOne({
+        where: {
+          userId: user.id,
+          updatedAt: {
+            [Op.gte]: today,
+            [Op.lt]: tomorrow,
+          },
+        },
+      });
+      console.log(log, "<<<log");
+
+      if (log) {
+        log.token = refresh_token;
+        await log.save();
+      } else {
+        await HistoyLog.create({ userId: user.id, token: refresh_token });
+      }
+
       return { access_token, refresh_token };
     } catch (error) {
       throw new Error("Error generating tokens");
@@ -478,18 +506,18 @@ class UserController {
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(today.getDate() - 7);
 
-      const activeSessionsLast7Days = await Session.findAll({
+      const activeSessionsLast7Days = await HistoyLog.findAll({
         attributes: [
-          [fn("DATE", col("createdAt")), "date"],
+          [fn("DATE", col("updatedAt")), "date"],
           [fn("COUNT", literal('DISTINCT "userId"')), "count"],
         ],
         where: {
-          createdAt: {
+          updatedAt: {
             [Op.gte]: sevenDaysAgo,
             [Op.lt]: tomorrow,
           },
         },
-        group: [fn("DATE", col("createdAt"))],
+        group: [fn("DATE", col("updatedAt"))],
         raw: true,
       });
 

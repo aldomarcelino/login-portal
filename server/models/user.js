@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
       User.hasOne(models.Session, {
         foreignKey: "userId",
       });
+
+      User.hasOne(models.HistoyLog, {
+        foreignKey: "userId",
+      });
     }
   }
   User.init(
