@@ -56,7 +56,13 @@ const Dashboard = () => {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIdx, setCurrentIdx] = useState("");
+  const [usersStat, setUsersStat] = useState({
+    total_users: 0,
+    active_today: 0,
+    average_7_days: 0,
+  });
   const [dataLimit] = useState(5);
   const [_, setError] = useState("");
 
@@ -133,6 +139,7 @@ const Dashboard = () => {
 
   // Get Users
   useEffect(() => {
+    // Get List User
     const getUsers = async () => {
       try {
         const { data } = await axios.get("/users");
@@ -150,10 +157,23 @@ const Dashboard = () => {
       }
     };
 
+    // Get Statistic
+    const getUsersStatistic = async () => {
+      try {
+        const { data } = await axios.get("/users/statistic");
+
+        setIsLoading(false);
+        setUsersStat(data);
+      } catch (error: any) {
+        setError(error);
+      }
+    };
+
     // Call
     setTimeout(() => {
       getUsers();
-    }, 1500);
+      getUsersStatistic();
+    }, 1000);
   }, []);
 
   return (
@@ -167,28 +187,28 @@ const Dashboard = () => {
         <Grid container marginBottom="24px">
           <Grid item md={4} xs={12} display="flex" justifyContent="center">
             <StatisticCard
-              title="100 Users"
+              title={usersStat.total_users + " Users"}
               desc="Total Signup Users"
-              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
-              isLoding={false}
+              detail="Total number of users who have signed up"
+              isLoding={isLoading}
               icon={() => <Users size={37} />}
             />
           </Grid>
           <Grid item md={4} xs={12} display="flex" justifyContent="center">
             <StatisticCard
-              title="7 Active"
+              title={usersStat.active_today + " Active"}
               desc="Users Active Sessions Today"
-              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
-              isLoding={false}
+              detail="Total number of users with active sessions today"
+              isLoding={isLoading}
               icon={() => <UserCheck size={37} />}
             />
           </Grid>
           <Grid item md={4} xs={12} display="flex" justifyContent="center">
             <StatisticCard
-              title="Average: 8"
+              title={"Average: " + usersStat.average_7_days}
               desc="Active Session Last 7 Days"
-              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
-              isLoding={false}
+              detail="Average number of active session users in the last 7 days rolling"
+              isLoding={isLoading}
               icon={() => <SlidersHorizontal size={37} />}
             />
           </Grid>

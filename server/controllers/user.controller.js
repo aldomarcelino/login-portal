@@ -278,38 +278,6 @@ class UserController {
     }
   }
 
-  // Log out function
-  static async logOut(req, res, next) {
-    try {
-      const { id } = req.user;
-      const { refresh_token } = req.cookies;
-
-      // Find user by ID
-      const user = await User.findByPk(id);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Update is_login to false
-      user.is_login = false;
-      await user.save();
-      await Session.destroy({ where: { token: refresh_token } });
-
-      // clear cookies
-      res.clearCookie("refresh_token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-      });
-
-      // Send response
-      res.sendStatus(204);
-    } catch (error) {
-      next(error);
-    }
-  }
-
   // send email verification
   static async sendVerification(req, res, next) {
     try {
@@ -412,6 +380,37 @@ class UserController {
       next(error);
     }
   }
+  // Log out function
+  static async logOut(req, res, next) {
+    try {
+      const { id } = req.user;
+      const { refresh_token } = req.cookies;
+
+      // Find user by ID
+      const user = await User.findByPk(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update is_login to false
+      user.is_login = false;
+      await user.save();
+      await Session.destroy({ where: { token: refresh_token } });
+
+      // clear cookies
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+      });
+
+      // Send response
+      res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
 
   // Get user list
   static async getAllUsers(_, res, next) {
@@ -476,9 +475,9 @@ class UserController {
       const averageActiveSessionsLast7Days = totalSessionsLast7Days;
 
       res.status(200).json({
-        totalUsers,
-        activeSessionsToday,
-        averageActiveSessionsLast7Days,
+        total_users: totalUsers,
+        active_today: activeSessionsToday,
+        average_7_days: averageActiveSessionsLast7Days,
       });
     } catch (error) {
       next(error);

@@ -22,8 +22,9 @@ const HideBox = styled(Box)`
   top: 100%;
   transition: all 0.3s ease-out;
   padding: 16px;
-  border-radius: 20px;
+  border-radius: 11px;
   position: absolute;
+  height: 130px;
 `;
 
 const ItemBox = styled(Box)(
@@ -107,11 +108,15 @@ const StatisticCard: React.FC<Data> = ({
       </Box>
 
       <HideBox className="hideBox">
-        <Typography color={Colors.white}>{title}</Typography>
-        <Typography marginTop="8px" color={Colors.white}>
-          {desc}
+        <Typography color={Colors.white} fontWeight={700} fontSize={20}>
+          {title}
         </Typography>
-        <Typography marginTop="34px" color={Colors.white}>
+        <Typography
+          marginTop="24px"
+          color={Colors.lightGrey}
+          fontSize={16}
+          lineHeight="19px"
+        >
           <span dangerouslySetInnerHTML={{ __html: detail }} />
         </Typography>
       </HideBox>

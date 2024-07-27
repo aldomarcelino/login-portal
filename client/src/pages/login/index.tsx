@@ -105,6 +105,7 @@ const LoginPage = () => {
           <Box
             position="relative"
             sx={{ height: "94px", width: "100%", marginBottom: "12px" }}
+            onClick={() => navigate("/")}
           >
             <img
               alt="logo-wellness"
