@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/auth/signup", userController.signUp);
 router.post("/auth/login", userController.signIn);
+router.post("/auth/refresh-token", userController.generateAccessToken);
 router.post("/auth/google", userController.signInWithGoogle);
 router.get("/email/verification", userController.sendVerification);
 router.get("/auth/facebook", userController.signInWithFacebook);
@@ -14,8 +15,9 @@ router.post("/auth/change-password", userController.changePassword);
 router.get("/auth/facebook/callback", userController.facebookCallback);
 router.get("/auth/verify/:token", userController.accountVerificarion);
 router.use(authentication);
-router.get("/auth/logout", userController.logOut);
+router.post("/auth/logout", userController.logOut);
 router.get("/users", userController.getAllUsers);
+router.get("/users/statistic", userController.getUsersStatistic);
 router.use(errorHandler);
 
 module.exports = router;

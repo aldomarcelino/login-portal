@@ -4,8 +4,12 @@ const { User } = require("../models");
 const authentication = async (req, res, next) => {
   try {
     // Get access token
-    const accessToken = req.headers.access_token;
-    let payload = tokenToPayload(accessToken);
+    const { authorization } = req.headers;
+    if (!authorization) throw { name: "empty_token" };
+
+    const token = authorization.split(" ")[1];
+    if (!token) throw { name: "JsonWebTokenError" };
+    let payload = tokenToPayload(token);
 
     // Check if user is exist
     let user = await User.findByPk(payload.id, { raw: true });

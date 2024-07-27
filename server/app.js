@@ -4,10 +4,18 @@ const app = express();
 const cors = require("cors");
 const router = require("./routers");
 const port = process.env.PORT || 10000;
+const cookieParser = require("cookie-parser");
 
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CLIENT_URL,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (_, res) => {
   res.send({

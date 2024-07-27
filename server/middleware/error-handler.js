@@ -10,8 +10,14 @@ const errorHandler = async (err, req, res, next) => {
     case "JsonWebTokenError":
       res.status(401).json({ message: "Invalid Token" });
       break;
+    case "empty_token":
+      res.status(401).json({ message: "Token is Required" });
+      break;
     case "Not_Valid":
       res.status(401).json({ message: "Email or password is invalid" });
+      break;
+    case "TokenExpiredError":
+      res.status(401).json({ message: "Token is expired" });
       break;
     case "token_expired":
       res.status(400).json({ message: "Link verification is expired" });

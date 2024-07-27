@@ -1,43 +1,14 @@
 import React, { useState } from "react";
 import { AppBar, Box, Container, Grid, Typography } from "@mui/material";
 import { Colors } from "styles/theme/color";
-import { getLocalStorage, removeLocalStorage } from "utils/local-storage";
+import { getLocalStorage } from "utils/local-storage";
 import { ChevronDown, Power } from "lucide-react";
 import { Menu } from "components/elements";
-import axios from "axios";
-import { useNavigate } from "react-router";
+import { logout } from "store/action";
 
 const Header = () => {
-  const navigate = useNavigate();
   // Initialize state
-  const [_, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleLogOut = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_SERVER}/auth/logout`,
-        {
-          headers: {
-            access_token: getLocalStorage("access_token"),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setLoading(false);
-        removeLocalStorage("access_token");
-        removeLocalStorage("full_name");
-        removeLocalStorage("email");
-      }
-      navigate("/login");
-    } catch (error: any) {
-      setError(error);
-      setLoading(false);
-    }
-  };
 
   return (
     <Container fixed={true} maxWidth={"lg"}>
@@ -118,7 +89,13 @@ const Header = () => {
                           color: Colors.white,
                         },
                       }}
-                      onClick={handleLogOut}
+                      onClick={() => {
+                        logout();
+                        setLoading(true);
+                        setTimeout(() => {
+                          setLoading(false);
+                        }, 1000);
+                      }}
                     >
                       <Power size={17} />
                       <Typography fontSize={15}>

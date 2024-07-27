@@ -30,26 +30,27 @@ const SearchBar: React.FC<SearchBarProps> = ({
   resetPage,
 }) => {
   return (
-    <Box
-      sx={{
-        backgroundColor: "white",
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "3px 21px",
-        borderRadius: "11px",
-      }}
-    >
-      <Box display="flex" alignItems="center" width="51%">
-        <Search size={24} data-testid="search-icon" />
-        <StyledTextField
-          name="search"
-          placeholder="Search Name"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            resetPage(1);
-          }}
-        />
+    <Box display="flex" justifyContent="end">
+      <Box
+        width="35%"
+        sx={{
+          backgroundColor: "white",
+          padding: "0px 21px",
+          borderRadius: "11px",
+        }}
+      >
+        <Box display="flex" alignItems="center" width="100%">
+          <Search size={24} data-testid="search-icon" />
+          <StyledTextField
+            name="search"
+            placeholder="Search Name"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              resetPage(1);
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   );

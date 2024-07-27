@@ -1,6 +1,6 @@
 import { useState } from "react";
+import axios from "store/action";
 import { Box, Typography } from "@mui/material";
-import axios from "axios";
 import { Button, TextField } from "components/elements";
 import { Eye, EyeOff } from "lucide-react";
 import { Colors } from "styles/theme/color";
@@ -32,10 +32,7 @@ const LoginPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_SERVER}/auth/login`,
-        form
-      );
+      const response = await axios.post("/auth/login", form);
 
       setLocalStorage("access_token", response.data?.access_token);
       setLocalStorage("full_name", response.data?.user.full_name);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "store/action";
 import {
   Box,
   Container,
@@ -10,14 +11,20 @@ import {
 } from "@mui/material";
 import { Menu, Pagination, SearchBar, Table } from "components/elements";
 import { Colors } from "styles/theme/color";
-import { EllipsisVertical, Plus } from "lucide-react";
+import {
+  EllipsisVertical,
+  Plus,
+  SlidersHorizontal,
+  UserCheck,
+  Users,
+} from "lucide-react";
 import { useAppDispatch } from "hooks";
 import { setUserDetail } from "store/reducer/user-profile";
 import useResponsive from "utils/use-media-query";
 import UserCard from "components/elements/card";
-import axios from "axios";
 import { getLocalStorage } from "utils/local-storage";
 import moment from "moment";
+import StatisticCard from "./stat-card";
 
 interface ListHead {
   id: number;
@@ -128,17 +135,9 @@ const Dashboard = () => {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_SERVER}/users`,
-          {
-            headers: {
-              access_token: getLocalStorage("access_token"),
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const { data } = await axios.get("/users");
 
-        const temp = response?.data.map((v: any, idx: number) => ({
+        const temp = data.map((v: any, idx: number) => ({
           ...v,
           image_url: `https://picsum.photos/id/${
             idx + Math.floor(Math.random() * 100)
@@ -164,6 +163,38 @@ const Dashboard = () => {
         maxWidth={"lg"}
         sx={{ padding: laptop ? "100px" : "90px 0px 0px" }}
       >
+        {/* Statistic - START */}
+        <Grid container marginBottom="24px">
+          <Grid item md={4} xs={12} display="flex" justifyContent="center">
+            <StatisticCard
+              title="100 Users"
+              desc="Total Signup Users"
+              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
+              isLoding={false}
+              icon={() => <Users size={37} />}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} display="flex" justifyContent="center">
+            <StatisticCard
+              title="7 Active"
+              desc="Users Active Sessions Today"
+              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
+              isLoding={false}
+              icon={() => <UserCheck size={37} />}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} display="flex" justifyContent="center">
+            <StatisticCard
+              title="Average: 8"
+              desc="Active Session Last 7 Days"
+              detail="fkalsdjf fasjdlfa fjasldf faljasfd asldjfas dfklasjd "
+              isLoding={false}
+              icon={() => <SlidersHorizontal size={37} />}
+            />
+          </Grid>
+        </Grid>
+        {/* Statistic - END */}
+
         <Box padding="0px 12px" position="relative">
           {/* Search Bar */}
           <SearchBar
