@@ -22,7 +22,6 @@ import { useAppDispatch } from "hooks";
 import { setUserDetail } from "store/reducer/user-profile";
 import useResponsive from "utils/use-media-query";
 import UserCard from "components/elements/card";
-import { getLocalStorage } from "utils/local-storage";
 import moment from "moment";
 import StatisticCard from "./stat-card";
 
@@ -287,7 +286,9 @@ const Dashboard = () => {
                     {handleShowStatus(item.is_login)}
                   </TableCell>
                   <TableCell align="left">
-                    {moment(item.updatedAt).format("DD MMM YYYY, HH:mm")}
+                    {item.is_login
+                      ? "_"
+                      : moment(item.updatedAt).format("DD MMM YYYY, HH:mm")}
                   </TableCell>
                   <TableCell align="left">
                     {moment(item.createdAt).format("DD MMM YYYY, HH:mm")}

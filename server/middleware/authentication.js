@@ -22,7 +22,9 @@ const authentication = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    next(err);
+    if (err.name == "TokenExpiredError")
+      res.status(401).json({ message: "acess_token_expired" });
+    else next(err);
   }
 };
 

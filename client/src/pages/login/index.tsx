@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "store/action";
 import { Box, Typography } from "@mui/material";
 import { Button, TextField } from "components/elements";
@@ -97,6 +97,12 @@ const LoginPage = () => {
   const handleLogin = () => {
     window.location.href = `${process.env.REACT_APP_API_SERVER}/auth/facebook`;
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorMsg = urlParams.get("errorMsg");
+    setError(errorMsg || "");
+  }, []);
 
   return (
     <>
@@ -205,6 +211,7 @@ const LoginPage = () => {
           >
             <button
               onClick={handleLogin}
+              disabled={loading}
               style={{
                 borderRadius: "5px",
                 border: `1px solid ${Colors.gery80}`,

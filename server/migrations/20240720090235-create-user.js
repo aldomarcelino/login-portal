@@ -34,9 +34,6 @@ module.exports = {
       login_count: {
         type: Sequelize.INTEGER,
       },
-      is_login: {
-        type: Sequelize.BOOLEAN,
-      },
       is_verified: {
         type: Sequelize.BOOLEAN,
       },

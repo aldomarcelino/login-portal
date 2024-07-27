@@ -19,11 +19,11 @@ passport.use(
       callbackURL: `${process.env.SERVER_URL}/auth/facebook/callback`,
       profileFields: ["id", "emails", "name"],
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (_accessToken, _refreshToken, profile, done) => {
       const { id, emails, name } = profile;
       const email = emails?.[0]?.value;
 
-      let user = await User.findOne({ where: { facebook_sso_id: id } });
+      let user = await User.findOne({ where: { email } });
 
       if (!user) {
         user = await User.create({
@@ -33,17 +33,17 @@ passport.use(
           password: "Bismillah",
           sso_sign_option: "FACEBOOK",
         });
+
+        // Update is_verified to true
+        user.is_verified = true;
+        // Increment login_count
+        user.login_count = user.login_count + 1;
+        await user.save();
+
+        done(null, { user, is_new: true });
+      } else {
+        done(null, { user });
       }
-
-      // Update is_verified to true
-      user.is_verified = true;
-      // Update is_login to true and increment login_count
-      user.is_login = true;
-      user.login_count = user.login_count + 1;
-      await user.save();
-
-      const token = payloadToToken({ id: user.id });
-      done(null, { user, token });
     }
   )
 );
@@ -96,7 +96,7 @@ class UserController {
           email: user.email,
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: process.env.ACESS_TOKEN_EXPIRES }
       );
 
       const refresh_token = jwt.sign(
@@ -106,7 +106,7 @@ class UserController {
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-          expiresIn: "1h",
+          expiresIn: process.env.REFRESH_TOKEN_EXPIRES,
         }
       );
 
@@ -130,8 +130,6 @@ class UserController {
 
       // Update is_verified to true
       user.is_verified = true;
-      // Update is_login to true and increment login_count
-      user.is_login = true;
       user.login_count = user.login_count + 1;
       await user.save();
 
@@ -177,8 +175,7 @@ class UserController {
       // Check if user verified
       if (!user.is_verified) throw { name: "not_verified" };
 
-      // Update is_login to true and increment login_count
-      user.is_login = true;
+      // Increment login_count
       user.login_count = (user.login_count || 0) + 1;
       await user.save();
 
@@ -251,8 +248,7 @@ class UserController {
         },
       });
 
-      // Update is_login to true and increment login_count
-      user.is_login = true;
+      // Update Increment login_count
       user.login_count = (user.login_count || 0) + 1;
       await user.save();
 
@@ -312,14 +308,35 @@ class UserController {
     passport.authenticate(
       "facebook",
       { sessions: false },
-      (err, data, info) => {
+      async (err, data, info) => {
         if (err) return next(err);
         if (!data) return res.redirect(`${process.env.CLIENT_URL}/login`);
 
-        const { token, user } = data;
-        res.redirect(
-          `${process.env.CLIENT_URL}/auth?token=${token}&full_name=${user.full_name}&email=${user.email}`
-        );
+        const { is_new, user } = data;
+        let token = "";
+
+        if (!is_new) {
+          res.redirect(
+            `${process.env.CLIENT_URL}/login?errorMsg=This account already use another SSO`
+          );
+        } else {
+          // Generate access token & refresh token
+          const { access_token, refresh_token } =
+            await UserController.generateTokens(user);
+
+          token = access_token;
+
+          // Store to cookies
+          res.cookie("refresh_token", refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+          });
+
+          res.redirect(
+            `${process.env.CLIENT_URL}/auth?token=${token}&full_name=${user.full_name}&email=${user.email}`
+          );
+        }
       }
     )(req, res, next);
   }
@@ -380,22 +397,16 @@ class UserController {
       next(error);
     }
   }
+
   // Log out function
   static async logOut(req, res, next) {
     try {
-      const { id } = req.user;
       const { refresh_token } = req.cookies;
-
-      // Find user by ID
-      const user = await User.findByPk(id);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      if (!refresh_token) {
+        return res.status(401).json({ message: "No valid session found" });
       }
 
-      // Update is_login to false
-      user.is_login = false;
-      await user.save();
+      // Delete user's session on db
       await Session.destroy({ where: { token: refresh_token } });
 
       // clear cookies
@@ -419,9 +430,21 @@ class UserController {
       const users = await User.findAll({
         attributes: { exclude: ["password"] },
         order: [["updatedAt", "DESC"]],
+        include: {
+          model: Session,
+          attributes: ["token"],
+        },
       });
 
-      res.status(200).json(users);
+      const usersWithLoginStatus = users.map((user) => {
+        // Convert user to JSON and remove tokens
+        const userJson = user.toJSON();
+        userJson.is_login = user.Session?.token ? true : false;
+        delete userJson.Session;
+        return userJson;
+      });
+
+      res.status(200).json(usersWithLoginStatus);
     } catch (error) {
       next(error);
     }

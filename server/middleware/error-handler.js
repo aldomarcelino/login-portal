@@ -11,7 +11,7 @@ const errorHandler = async (err, req, res, next) => {
       res.status(401).json({ message: "Invalid Token" });
       break;
     case "empty_token":
-      res.status(401).json({ message: "Token is Required" });
+      res.status(401).json({ message: "token_is_required" });
       break;
     case "Not_Valid":
       res.status(401).json({ message: "Email or password is invalid" });
@@ -29,7 +29,7 @@ const errorHandler = async (err, req, res, next) => {
       res.status(400).json({ message: "The password has been used before" });
       break;
     case "Forbidden":
-      res.status(403).json({ message: "Not Authorize" });
+      res.status(403).json({ message: "Not_Authorize" });
       break;
     case "not_verified":
       res.status(403).json({ message: "Please verify your account first" });

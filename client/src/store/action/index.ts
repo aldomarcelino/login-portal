@@ -31,9 +31,10 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const message = error.response.data.message || "";
 
     if (
-      error.response.data.message === "Token is Required" &&
+      (message === "token_is_required" || message === "acess_token_expired") &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
@@ -54,7 +55,7 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    if (error.response.status === 403) {
+    if (message === "Not_Authorize") {
       console.error("Refresh token expired or invalid");
       logout();
     }
@@ -65,7 +66,7 @@ axiosInstance.interceptors.response.use(
 
 export const logout = async (): Promise<void> => {
   try {
-    await axiosInstance.post("/auth/logout");
+    await axiosInstance.post("/auth/logout", {});
   } catch (err) {
     console.error("Failed to logout", err);
   } finally {

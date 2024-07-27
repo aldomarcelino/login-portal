@@ -81,10 +81,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         type: DataTypes.INTEGER,
       },
-      is_login: {
-        allowNull: true,
-        type: DataTypes.BOOLEAN,
-      },
       is_verified: {
         allowNull: true,
         type: DataTypes.BOOLEAN,
