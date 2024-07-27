@@ -248,6 +248,8 @@ class UserController {
         },
       });
 
+      if (user.sso_sign_option !== "GOOGLE") throw { name: "SSO_EXIST" };
+
       // Update Increment login_count
       user.login_count = (user.login_count || 0) + 1;
       await user.save();
@@ -315,7 +317,7 @@ class UserController {
         const { is_new, user } = data;
         let token = "";
 
-        if (!is_new) {
+        if (!is_new && user.sso_sign_option !== "FACEBOOK") {
           res.redirect(
             `${process.env.CLIENT_URL}/login?errorMsg=This account already use another SSO`
           );

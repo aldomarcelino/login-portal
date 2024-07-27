@@ -13,6 +13,9 @@ const errorHandler = async (err, req, res, next) => {
     case "empty_token":
       res.status(401).json({ message: "token_is_required" });
       break;
+    case "SSO_EXIST":
+      res.status(401).json({ message: "This account already use another SSO" });
+      break;
     case "Not_Valid":
       res.status(401).json({ message: "Email or password is invalid" });
       break;
