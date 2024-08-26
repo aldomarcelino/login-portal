@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "userId",
       });
 
-      User.hasOne(models.HistoyLog, {
+      User.hasMany(models.HistoyLog, {
         foreignKey: "userId",
       });
     }
